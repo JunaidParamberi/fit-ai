@@ -1,0 +1,7 @@
+{
+  "name": "FitAI Coach - Personalized Fitness Assessment",
+  "description": "An intelligent fitness coaching application that provides deep health assessments, personalized TDEE calculations, and AI-driven workout/nutrition advice using Gemini.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
