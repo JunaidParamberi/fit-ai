@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, SafeAreaView, StatusBar } from 'react-native';
 import { UserProfile, AssessmentResult, DietPlan, WorkoutPlan } from './types';
 import { getFitnessAssessment, getDietPlan, getWorkoutPlan } from './services/geminiService';
 import AssessmentForm from './components/AssessmentForm';
@@ -11,6 +12,9 @@ import Dashboard from './components/Dashboard';
 import CalorieTracker from './components/CalorieTracker';
 import CoachView from './components/CoachView';
 import ProcessingView from './components/ProcessingView';
+import tw from 'twrnc';
+import { FontAwesome6 } from '@expo/vector-icons';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 type ViewState = 'setup' | 'dashboard' | 'training' | 'nutrition' | 'progress' | 'calories' | 'coach';
 
@@ -58,108 +62,107 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAF9] text-slate-800 pb-24">
-      {isLoading && <ProcessingView />}
+    <SafeAreaProvider>
+      <SafeAreaView style={tw`flex-1 bg-[#F8FAF9]`}>
+        <StatusBar barStyle="dark-content" />
+        {isLoading && <ProcessingView />}
 
-      <header className="bg-white/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-40">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-2 cursor-pointer" onClick={() => setActiveView('setup')}>
-            <div className="w-8 h-8 bg-[#52B788] rounded-lg flex items-center justify-center text-white">
-              <i className="fa-solid fa-seedling text-sm"></i>
-            </div>
-            <span className="text-lg font-bold tracking-tight text-slate-800">
-              FitAI <span className="text-[#52B788]">Wellness</span>
-            </span>
-          </div>
+        <View style={tw`bg-white border-b border-slate-100 px-4 h-16 flex-row items-center justify-between`}>
+          <TouchableOpacity
+            style={tw`flex-row items-center`}
+            onPress={() => setActiveView('setup')}
+          >
+            <View style={tw`w-8 h-8 bg-[#52B788] rounded-lg items-center justify-center`}>
+              <FontAwesome6 name="seedling" size={14} color="white" />
+            </View>
+            <Text style={tw`text-lg font-bold tracking-tight text-slate-800 ml-2`}>
+              FitAI <Text style={tw`text-[#52B788]`}>Wellness</Text>
+            </Text>
+          </TouchableOpacity>
 
-          {assessment && (
-            <div className="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-500">
-              <button onClick={() => setActiveView('dashboard')} className={`${activeView === 'dashboard' ? 'text-[#52B788]' : 'hover:text-[#52B788]'} transition-colors`}>Home</button>
-              <button onClick={() => setActiveView('training')} className={`${activeView === 'training' ? 'text-[#52B788]' : 'hover:text-[#52B788]'} transition-colors`}>Routine</button>
-              <button onClick={() => setActiveView('calories')} className={`${activeView === 'calories' ? 'text-[#52B788]' : 'hover:text-[#52B788]'} transition-colors`}>Meals</button>
-              <button onClick={() => setActiveView('coach')} className={`${activeView === 'coach' ? 'text-[#52B788]' : 'hover:text-[#52B788]'} transition-colors`}>Coach</button>
-            </div>
+          <View style={tw`w-8`} />
+        </View>
+
+        <ScrollView contentContainerStyle={tw`px-4 py-8 pb-32`}>
+          {error && (
+            <View style={tw`mb-8 bg-rose-50 border border-rose-100 px-4 py-3 rounded-2xl flex-row items-center`}>
+              <FontAwesome6 name="circle-info" size={14} color="#E11D48" style={tw`mr-2`} />
+              <Text style={tw`text-rose-600 text-sm flex-1`}>{error}</Text>
+            </View>
           )}
 
-          <div className="w-8 md:w-auto"></div>
-        </div>
-      </header>
+          <View>
+            {activeView === 'setup' ? (
+              <View style={tw`items-center py-10`}>
+                <View style={tw`text-center space-y-4 mb-10 max-w-xs`}>
+                  <Text style={tw`text-3xl font-bold tracking-tight text-slate-900 text-center`}>
+                    Your journey to {"\n"}
+                    <Text style={tw`text-[#52B788]`}>balanced wellness</Text>.
+                  </Text>
+                  <Text style={tw`text-slate-500 text-lg text-center mt-4`}>
+                    Let's create a routine that fits your life and makes you feel great.
+                  </Text>
+                </View>
+                <View style={tw`w-full`}>
+                  <AssessmentForm onSubmit={handleAssessmentSubmit} isLoading={isLoading} />
+                </View>
+              </View>
+            ) : (
+              <View style={tw`w-full`}>
+                {activeView === 'dashboard' && profile && assessment && (
+                  <Dashboard profile={profile} assessment={assessment} />
+                )}
+                {activeView === 'training' && workoutPlan && (
+                  <WorkoutPlanView plan={workoutPlan} />
+                )}
+                {activeView === 'calories' && assessment && (
+                  <CalorieTracker assessment={assessment} />
+                )}
+                {activeView === 'coach' && profile && assessment && (
+                  <CoachView profile={profile} assessment={assessment} />
+                )}
+                {activeView === 'progress' && profile && assessment && (
+                  <View style={tw`space-y-8`}>
+                    <ImageAnalyzer />
+                    <View style={tw`h-8`} />
+                    <ProgressTracker profile={profile} assessment={assessment} />
+                    <View style={tw`h-8`} />
+                    <ReportView result={assessment} onReset={handleReset} />
+                  </View>
+                )}
+              </View>
+            )}
+          </View>
+        </ScrollView>
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-        {error && (
-          <div className="mb-8 bg-rose-50 border border-rose-100 text-rose-600 px-4 py-3 rounded-2xl flex items-center text-sm">
-            <i className="fa-solid fa-circle-info mr-2"></i>
-            <span>{error}</span>
-          </div>
+        {assessment && (
+          <View style={tw`absolute bottom-0 left-0 right-0 bg-white border-t border-slate-100 h-24 flex-row items-center justify-around px-2 rounded-t-[24px] shadow-lg`}>
+            {[
+              { id: 'dashboard', icon: 'house', label: 'Home' },
+              { id: 'training', icon: 'heart', label: 'Routine' },
+              { id: 'coach', icon: 'comment', label: 'Coach' },
+              { id: 'calories', icon: 'bowl-food', label: 'Meals' },
+              { id: 'progress', icon: 'chart-simple', label: 'Log' },
+            ].map((nav) => (
+              <TouchableOpacity
+                key={nav.id}
+                onPress={() => setActiveView(nav.id as ViewState)}
+                style={tw`items-center flex-1 py-2`}
+              >
+                <FontAwesome6
+                  name={nav.icon}
+                  size={20}
+                  color={activeView === nav.id ? '#52B788' : '#94A3B8'}
+                />
+                <Text style={tw`text-[10px] mt-1 font-semibold ${activeView === nav.id ? 'text-[#52B788]' : 'text-slate-400'}`}>
+                  {nav.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         )}
-
-        <div key={activeView} className="view-transition">
-          {activeView === 'setup' ? (
-            <div className="flex flex-col items-center py-10">
-              <div className="text-center space-y-4 mb-10 max-w-xl">
-                <h1 className="text-4xl font-bold tracking-tight text-slate-900">
-                  Your journey to <br/> 
-                  <span className="text-[#52B788]">balanced wellness</span>.
-                </h1>
-                <p className="text-slate-500 text-lg">
-                  Let's create a routine that fits your life and makes you feel great.
-                </p>
-              </div>
-              <div className="w-full max-w-md">
-                <AssessmentForm onSubmit={handleAssessmentSubmit} isLoading={isLoading} />
-              </div>
-            </div>
-          ) : (
-            <div className="max-w-3xl mx-auto">
-              {activeView === 'dashboard' && profile && assessment && (
-                <Dashboard profile={profile} assessment={assessment} />
-              )}
-              {activeView === 'training' && workoutPlan && (
-                <WorkoutPlanView plan={workoutPlan} />
-              )}
-              {activeView === 'calories' && assessment && (
-                <CalorieTracker assessment={assessment} />
-              )}
-              {activeView === 'coach' && profile && assessment && (
-                <CoachView profile={profile} assessment={assessment} />
-              )}
-              {activeView === 'progress' && profile && assessment && (
-                <div className="space-y-8">
-                  <ImageAnalyzer />
-                  <ProgressTracker profile={profile} assessment={assessment} />
-                  <ReportView result={assessment} onReset={handleReset} />
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </main>
-
-      {assessment && (
-        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 h-20 md:hidden flex items-center justify-around px-2 z-40 rounded-t-[24px] shadow-lg">
-           <button onClick={() => setActiveView('dashboard')} className={`flex flex-col items-center flex-1 py-2 ${activeView === 'dashboard' ? 'text-[#52B788]' : 'text-slate-400'}`}>
-             <i className="fa-solid fa-house text-lg"></i>
-             <span className="text-[10px] mt-1 font-semibold">Home</span>
-           </button>
-           <button onClick={() => setActiveView('training')} className={`flex flex-col items-center flex-1 py-2 ${activeView === 'training' ? 'text-[#52B788]' : 'text-slate-400'}`}>
-             <i className="fa-solid fa-heart text-lg"></i>
-             <span className="text-[10px] mt-1 font-semibold">Routine</span>
-           </button>
-           <button onClick={() => setActiveView('coach')} className={`flex flex-col items-center flex-1 py-2 ${activeView === 'coach' ? 'text-[#52B788]' : 'text-slate-400'}`}>
-             <i className="fa-solid fa-comment text-lg"></i>
-             <span className="text-[10px] mt-1 font-semibold">Coach</span>
-           </button>
-           <button onClick={() => setActiveView('calories')} className={`flex flex-col items-center flex-1 py-2 ${activeView === 'calories' ? 'text-[#52B788]' : 'text-slate-400'}`}>
-             <i className="fa-solid fa-bowl-food text-lg"></i>
-             <span className="text-[10px] mt-1 font-semibold">Meals</span>
-           </button>
-           <button onClick={() => setActiveView('progress')} className={`flex flex-col items-center flex-1 py-2 ${activeView === 'progress' ? 'text-[#52B788]' : 'text-slate-400'}`}>
-             <i className="fa-solid fa-chart-simple text-lg"></i>
-             <span className="text-[10px] mt-1 font-semibold">Log</span>
-           </button>
-        </nav>
-      )}
-    </div>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 };
 

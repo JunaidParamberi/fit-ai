@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, ActivityIndicator } from 'react-native';
 import { ChatMessage, AssessmentResult, UserProfile } from '../types';
 import { chatWithCoach } from '../services/geminiService';
+import tw from 'twrnc';
+import { FontAwesome6 } from '@expo/vector-icons';
 
 interface Props {
   profile: UserProfile;
@@ -13,27 +16,19 @@ const CoachView: React.FC<Props> = ({ profile, assessment }) => {
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTo({
-        top: scrollRef.current.scrollHeight,
-        behavior: 'smooth'
-      });
-    }
-  }, [messages, isTyping]);
+  const scrollRef = useRef<ScrollView>(null);
 
   const handleSend = async (customMsg?: string) => {
     const textToSend = customMsg || input;
     if (!textToSend.trim()) return;
 
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', content: textToSend }]);
+    const newMessages: ChatMessage[] = [...messages, { role: 'user', content: textToSend }];
+    setMessages(newMessages);
     setIsTyping(true);
 
     try {
-      const response = await chatWithCoach(messages, textToSend);
+      const response = await chatWithCoach(newMessages, textToSend);
       setMessages(prev => [...prev, { role: 'model', content: response }]);
     } catch (error) {
       setMessages(prev => [...prev, { role: 'model', content: "I'm having a little trouble connecting. Let's try chatting again in a second!" }]);
@@ -50,65 +45,69 @@ const CoachView: React.FC<Props> = ({ profile, assessment }) => {
   ];
 
   return (
-    <div className="flex flex-col h-[75vh]">
-      <div 
+    <View style={tw`flex-1 h-[70vh]`}>
+      <ScrollView
         ref={scrollRef} 
-        className="flex-1 overflow-y-auto space-y-4 px-1 pb-4"
+        onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
+        style={tw`flex-1 px-1 mb-4`}
       >
         {messages.map((m, i) => (
-          <div key={i} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
-            <div className={`max-w-[85%] px-5 py-3 rounded-[20px] text-sm leading-relaxed ${
+          <View key={i} style={tw`mb-4 flex-row ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <View style={[
+              tw`max-w-[85%] px-5 py-3 rounded-[20px] shadow-sm`,
               m.role === 'user' 
-              ? 'bg-[#52B788] text-white rounded-tr-none' 
-              : 'bg-white text-slate-700 border border-slate-100 rounded-tl-none soft-shadow'
-            }`}>
-              <div className="whitespace-pre-line">{m.content}</div>
-            </div>
-          </div>
+              ? tw`bg-[#52B788] rounded-tr-none`
+              : tw`bg-white border border-slate-100 rounded-tl-none`
+            ]}>
+              <Text style={[tw`text-sm leading-relaxed`, m.role === 'user' ? tw`text-white` : tw`text-slate-700`]}>
+                {m.content}
+              </Text>
+            </View>
+          </View>
         ))}
         {isTyping && (
-          <div className="flex justify-start">
-            <div className="bg-white border border-slate-100 px-5 py-4 rounded-[20px] rounded-tl-none soft-shadow flex space-x-1">
-              <div className="w-1.5 h-1.5 bg-[#52B788] rounded-full animate-bounce"></div>
-              <div className="w-1.5 h-1.5 bg-[#52B788] rounded-full animate-bounce [animation-delay:0.2s]"></div>
-              <div className="w-1.5 h-1.5 bg-[#52B788] rounded-full animate-bounce [animation-delay:0.4s]"></div>
-            </div>
-          </div>
+          <View style={tw`flex-row justify-start mb-4`}>
+            <View style={tw`bg-white border border-slate-100 px-5 py-4 rounded-[20px] rounded-tl-none shadow-sm flex-row space-x-1`}>
+               <ActivityIndicator size="small" color="#52B788" />
+            </View>
+          </View>
         )}
-      </div>
+      </ScrollView>
 
-      <div className="py-4 space-y-4">
-        <div className="flex space-x-2 overflow-x-auto no-scrollbar pb-1">
+      <View style={tw`py-4`}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={tw`flex-row mb-4`}>
           {quickPrompts.map((p, i) => (
-            <button 
+            <TouchableOpacity
               key={i}
-              onClick={() => handleSend(p)}
-              className="flex-shrink-0 bg-white border border-slate-100 px-4 py-2 rounded-full text-xs font-medium text-slate-500 hover:bg-[#F8FAF9] hover:text-[#52B788] transition-colors soft-shadow"
+              onPress={() => handleSend(p)}
+              style={tw`bg-white border border-slate-100 px-4 py-2 rounded-full mr-2 shadow-sm`}
             >
-              {p}
-            </button>
+              <Text style={tw`text-xs font-medium text-slate-500`}>{p}</Text>
+            </TouchableOpacity>
           ))}
-        </div>
+        </ScrollView>
 
-        <div className="flex space-x-2">
-          <input
-            type="text"
+        <View style={tw`flex-row items-center space-x-2`}>
+          <TextInput
             value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+            onChangeText={setInput}
             placeholder="Talk to your coach..."
-            className="flex-1 px-5 py-4 bg-white border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#52B788]/20 text-sm"
+            style={tw`flex-1 px-5 py-4 bg-white border border-slate-100 rounded-2xl text-sm mr-2`}
           />
-          <button 
-            onClick={() => handleSend()}
+          <TouchableOpacity
+            onPress={() => handleSend()}
             disabled={!input.trim() && !isTyping}
-            className="w-14 h-14 bg-[#52B788] text-white rounded-2xl flex items-center justify-center disabled:opacity-50 transition-transform active:scale-95 shadow-md"
+            style={[tw`w-14 h-14 bg-[#52B788] rounded-2xl items-center justify-center shadow-md`, (!input.trim() && !isTyping) ? tw`opacity-50` : null]}
           >
-            <i className={`fa-solid ${isTyping ? 'fa-spinner fa-spin' : 'fa-paper-plane'} text-lg`}></i>
-          </button>
-        </div>
-      </div>
-    </div>
+            {isTyping ? (
+               <ActivityIndicator color="white" />
+            ) : (
+               <FontAwesome6 name="paper-plane" size={18} color="white" />
+            )}
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
   );
 };
 

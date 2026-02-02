@@ -1,9 +1,12 @@
-
 import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import Slider from '@react-native-community/slider';
 import { 
   UserProfile, Gender, ActivityLevel, Goal, DietType, 
   ExperienceLevel, CuisineStyle, MealPattern 
 } from '../types';
+import tw from 'twrnc';
+import { FontAwesome6 } from '@expo/vector-icons';
 
 interface Props {
   onSubmit: (profile: UserProfile) => void;
@@ -66,398 +69,433 @@ const AssessmentForm: React.FC<Props> = ({ onSubmit, isLoading }) => {
 
   const progress = ((steps.indexOf(step) + 1) / steps.length) * 100;
 
-  const buttonClass = "w-full py-4 rounded-2xl font-bold text-sm transition-all active:scale-[0.98]";
-  const primaryBtn = `${buttonClass} bg-[#52B788] text-white shadow-md hover:bg-[#40916C]`;
-  const secondaryBtn = `${buttonClass} bg-white border border-slate-100 text-slate-500 hover:text-[#52B788]`;
+  const buttonClass = tw`w-full py-4 rounded-2xl items-center`;
+  const primaryBtn = tw`${buttonClass} bg-[#52B788]`;
+  const secondaryBtn = tw`${buttonClass} bg-white border border-slate-100`;
   
   const optionCardClass = (selected: boolean) => 
-    `flex items-center p-4 rounded-2xl border-2 transition-all cursor-pointer ${
-      selected ? 'border-[#52B788] bg-[#F8FAF9]' : 'border-slate-50 bg-white hover:border-slate-200'
+    tw`flex-row items-center p-4 rounded-2xl border-2 ${
+      selected ? 'border-[#52B788] bg-[#F8FAF9]' : 'border-slate-50 bg-white'
     }`;
 
-  const sliderLabelClass = "text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2";
+  const sliderLabelClass = tw`text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2`;
 
   return (
-    <div className="w-full max-w-md mx-auto">
+    <View style={tw`w-full max-w-md`}>
       {step !== 'welcome' && (
-        <div className="w-full h-1.5 bg-slate-100 rounded-full mb-8 overflow-hidden">
-          <div 
-            className="h-full bg-[#52B788] transition-all duration-700 ease-out" 
-            style={{ width: `${progress}%` }}
-          ></div>
-        </div>
+        <View style={tw`w-full h-1.5 bg-slate-100 rounded-full mb-8 overflow-hidden`}>
+          <View
+            style={[tw`h-full bg-[#52B788]`, { width: `${progress}%` }]}
+          />
+        </View>
       )}
 
-      <div className="animate-soft-fade-in" key={step}>
+      <View key={step}>
         {step === 'welcome' && (
-          <div className="text-center space-y-8">
-            <div className="w-24 h-24 bg-[#52B788]/10 rounded-[32px] flex items-center justify-center mx-auto pulse-soft">
-              <i className="fa-solid fa-leaf text-4xl text-[#52B788]"></i>
-            </div>
-            <div className="space-y-4">
-              <h2 className="text-3xl font-bold text-slate-800 tracking-tight leading-tight">Welcome to your <br/>better self</h2>
-              <p className="text-slate-500 font-medium leading-relaxed">
+          <View style={tw`items-center`}>
+            <View style={tw`w-24 h-24 bg-[#52B7881A] rounded-[32px] items-center justify-center mb-8`}>
+              <FontAwesome6 name="leaf" size={40} color="#52B788" />
+            </View>
+            <View style={tw`items-center mb-8`}>
+              <Text style={tw`text-3xl font-bold text-slate-800 text-center tracking-tight`}>Welcome to your {"\n"}better self</Text>
+              <Text style={tw`text-slate-500 font-medium text-center mt-4 px-4`}>
                 Let's spend 2 minutes building your custom AI fitness plan. Ready to transform?
-              </p>
-            </div>
-            <button onClick={nextStep} className={primaryBtn}>
-              Start Journey
-            </button>
-          </div>
+              </Text>
+            </View>
+            <TouchableOpacity onPress={nextStep} style={primaryBtn}>
+              <Text style={tw`text-white font-bold text-sm`}>Start Journey</Text>
+            </TouchableOpacity>
+          </View>
         )}
 
         {step === 'basics' && (
-          <div className="space-y-8">
-            <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-slate-800">The Basics</h2>
-              <p className="text-slate-500 text-sm font-medium">Let's get your vitals down first.</p>
-            </div>
+          <View style={tw`space-y-8`}>
+            <View style={tw`mb-6`}>
+              <Text style={tw`text-2xl font-bold text-slate-800`}>The Basics</Text>
+              <Text style={tw`text-slate-500 text-sm font-medium mt-1`}>Let's get your vitals down first.</Text>
+            </View>
             
-            <div className="space-y-6">
-              <div>
-                <label className={sliderLabelClass}>I identify as</label>
-                <div className="grid grid-cols-3 gap-3">
+            <View style={tw`space-y-6`}>
+              <View style={tw`mb-6`}>
+                <Text style={sliderLabelClass}>I identify as</Text>
+                <View style={tw`flex-row justify-between`}>
                   {(['male', 'female', 'other'] as Gender[]).map(g => (
-                    <button 
+                    <TouchableOpacity
                       key={g}
-                      onClick={() => updateData({ gender: g })}
-                      className={`py-3 rounded-xl text-xs font-bold uppercase tracking-wider border-2 transition-all ${formData.gender === g ? 'border-[#52B788] bg-[#F8FAF9] text-[#2D6A4F]' : 'border-slate-50 bg-white text-slate-400'}`}
+                      onPress={() => updateData({ gender: g })}
+                      style={[tw`flex-1 py-3 rounded-xl items-center border-2 mx-1`, formData.gender === g ? tw`border-[#52B788] bg-[#F8FAF9]` : tw`border-slate-50 bg-white`]}
                     >
-                      {g}
-                    </button>
+                      <Text style={[tw`text-xs font-bold uppercase tracking-wider`, formData.gender === g ? tw`text-[#2D6A4F]` : tw`text-slate-400`]}>{g}</Text>
+                    </TouchableOpacity>
                   ))}
-                </div>
-              </div>
+                </View>
+              </View>
               
-              <div className="space-y-4">
-                <div className="flex justify-between items-end">
-                  <label className={sliderLabelClass}>Age</label>
-                  <span className="text-lg font-bold text-slate-800">{formData.age}</span>
-                </div>
-                <input 
-                  type="range" min="14" max="90" 
+              <View style={tw`mb-6`}>
+                <View style={tw`flex-row justify-between items-end mb-2`}>
+                  <Text style={sliderLabelClass}>Age</Text>
+                  <Text style={tw`text-lg font-bold text-slate-800`}>{formData.age}</Text>
+                </View>
+                <Slider
+                  minimumValue={14} maximumValue={90} step={1}
                   value={formData.age} 
-                  onChange={(e) => updateData({ age: parseInt(e.target.value) })}
-                  className="w-full accent-[#52B788]"
+                  onValueChange={(val) => updateData({ age: val })}
+                  minimumTrackTintColor="#52B788"
+                  thumbTintColor="#52B788"
                 />
-              </div>
+              </View>
 
-              <div className="space-y-4">
-                <div className="flex justify-between items-end">
-                  <label className={sliderLabelClass}>Height</label>
-                  <span className="text-lg font-bold text-slate-800">{formData.height_cm} <span className="text-xs text-slate-300">cm</span></span>
-                </div>
-                <input 
-                  type="range" min="120" max="230" 
+              <View style={tw`mb-6`}>
+                <View style={tw`flex-row justify-between items-end mb-2`}>
+                  <Text style={sliderLabelClass}>Height</Text>
+                  <Text style={tw`text-lg font-bold text-slate-800`}>{formData.height_cm} <Text style={tw`text-xs text-slate-300`}>cm</Text></Text>
+                </View>
+                <Slider
+                  minimumValue={120} maximumValue={230} step={1}
                   value={formData.height_cm} 
-                  onChange={(e) => updateData({ height_cm: parseInt(e.target.value) })}
-                  className="w-full accent-[#52B788]"
+                  onValueChange={(val) => updateData({ height_cm: val })}
+                  minimumTrackTintColor="#52B788"
+                  thumbTintColor="#52B788"
                 />
-              </div>
+              </View>
 
-              <div className="space-y-4">
-                <div className="flex justify-between items-end">
-                  <label className={sliderLabelClass}>Weight</label>
-                  <span className="text-lg font-bold text-slate-800">{formData.weight_kg} <span className="text-xs text-slate-300">kg</span></span>
-                </div>
-                <input 
-                  type="range" min="30" max="200" 
+              <View style={tw`mb-6`}>
+                <View style={tw`flex-row justify-between items-end mb-2`}>
+                  <Text style={sliderLabelClass}>Weight</Text>
+                  <Text style={tw`text-lg font-bold text-slate-800`}>{formData.weight_kg} <Text style={tw`text-xs text-slate-300`}>kg</Text></Text>
+                </View>
+                <Slider
+                  minimumValue={30} maximumValue={200} step={1}
                   value={formData.weight_kg} 
-                  onChange={(e) => updateData({ weight_kg: parseInt(e.target.value) })}
-                  className="w-full accent-[#52B788]"
+                  onValueChange={(val) => updateData({ weight_kg: val })}
+                  minimumTrackTintColor="#52B788"
+                  thumbTintColor="#52B788"
                 />
-              </div>
-            </div>
+              </View>
+            </View>
 
-            <div className="flex space-x-3 pt-4">
-              <button onClick={prevStep} className={secondaryBtn}>Back</button>
-              <button onClick={nextStep} className={primaryBtn}>Continue</button>
-            </div>
-          </div>
+            <View style={tw`flex-row pt-4`}>
+              <TouchableOpacity onPress={prevStep} style={[secondaryBtn, tw`flex-1 mr-2`]}>
+                <Text style={tw`text-slate-500 font-bold text-sm`}>Back</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={nextStep} style={[primaryBtn, tw`flex-1 ml-2`]}>
+                <Text style={tw`text-white font-bold text-sm`}>Continue</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         )}
 
         {step === 'goal' && (
-          <div className="space-y-8">
-            <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-slate-800">Your Goal</h2>
-              <p className="text-slate-500 text-sm font-medium">What is the finish line for you?</p>
-            </div>
+          <View style={tw`space-y-8`}>
+            <View style={tw`mb-6`}>
+              <Text style={tw`text-2xl font-bold text-slate-800`}>Your Goal</Text>
+              <Text style={tw`text-slate-500 text-sm font-medium mt-1`}>What is the finish line for you?</Text>
+            </View>
 
-            <div className="grid grid-cols-2 gap-4">
+            <View style={tw`flex-row flex-wrap justify-between mb-8`}>
               {[
-                { id: 'fat loss', label: 'Lose Fat', icon: 'fa-fire' },
-                { id: 'muscle gain', label: 'Build Muscle', icon: 'fa-dumbbell' },
-                { id: 'recomposition', label: 'Stay Fit', icon: 'fa-wand-magic-sparkles' },
-                { id: 'endurance', label: 'Endurance', icon: 'fa-person-running' }
+                { id: 'fat loss', label: 'Lose Fat', icon: 'fire' },
+                { id: 'muscle gain', label: 'Build Muscle', icon: 'dumbbell' },
+                { id: 'recomposition', label: 'Stay Fit', icon: 'wand-magic-sparkles' },
+                { id: 'endurance', label: 'Endurance', icon: 'person-running' }
               ].map((opt) => (
-                <div 
+                <TouchableOpacity
                   key={opt.id} 
-                  onClick={() => { updateData({ goal: opt.id as Goal }); setTimeout(nextStep, 200); }}
-                  className={`flex flex-col items-center text-center p-6 rounded-2xl border-2 transition-all cursor-pointer ${formData.goal === opt.id ? 'border-[#52B788] bg-[#F8FAF9]' : 'border-slate-50 bg-white hover:border-slate-200'}`}
+                  onPress={() => { updateData({ goal: opt.id as Goal }); setTimeout(nextStep, 200); }}
+                  style={[tw`w-[48%] flex-col items-center p-6 rounded-2xl border-2 mb-4`, formData.goal === opt.id ? tw`border-[#52B788] bg-[#F8FAF9]` : tw`border-slate-50 bg-white`]}
                 >
-                  <i className={`fa-solid ${opt.icon} text-xl mb-3 ${formData.goal === opt.id ? 'text-[#52B788]' : 'text-slate-200'}`}></i>
-                  <span className="text-xs font-bold text-slate-700">{opt.label}</span>
-                </div>
+                  <FontAwesome6 name={opt.icon} size={20} color={formData.goal === opt.id ? '#52B788' : '#E2E8F0'} style={tw`mb-3`} />
+                  <Text style={tw`text-xs font-bold text-slate-700`}>{opt.label}</Text>
+                </TouchableOpacity>
               ))}
-            </div>
+            </View>
             
-            <button onClick={prevStep} className={secondaryBtn}>Back</button>
-          </div>
+            <TouchableOpacity onPress={prevStep} style={secondaryBtn}>
+              <Text style={tw`text-slate-500 font-bold text-sm`}>Back</Text>
+            </TouchableOpacity>
+          </View>
         )}
 
         {step === 'activity' && (
-          <div className="space-y-8">
-            <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-slate-800">Movement</h2>
-              <p className="text-slate-500 text-sm font-medium">Be honest! It helps the math.</p>
-            </div>
+          <View style={tw`space-y-8`}>
+            <View style={tw`mb-6`}>
+              <Text style={tw`text-2xl font-bold text-slate-800`}>Movement</Text>
+              <Text style={tw`text-slate-500 text-sm font-medium mt-1`}>Be honest! It helps the math.</Text>
+            </View>
 
-            <div className="space-y-3">
+            <View style={tw`space-y-3 mb-8`}>
               {[
                 { id: 'sedentary', label: 'Mostly Sitting', desc: 'Desk job, very little activity' },
                 { id: 'light', label: 'Lightly Active', desc: 'Daily walks, active at home' },
                 { id: 'moderate', label: 'Active', desc: 'Workout 3-4 times per week' },
                 { id: 'active', label: 'Very Active', desc: 'Athlete level or manual labor' }
               ].map((opt) => (
-                <div 
+                <TouchableOpacity
                   key={opt.id} 
-                  onClick={() => { updateData({ activityLevel: opt.id as ActivityLevel }); setTimeout(nextStep, 200); }}
-                  className={optionCardClass(formData.activityLevel === opt.id)}
+                  onPress={() => { updateData({ activityLevel: opt.id as ActivityLevel }); setTimeout(nextStep, 200); }}
+                  style={optionCardClass(formData.activityLevel === opt.id)}
                 >
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center mr-4 ${formData.activityLevel === opt.id ? 'bg-[#52B788] text-white' : 'bg-slate-50 text-slate-300'}`}>
-                    <i className="fa-solid fa-person-walking text-sm"></i>
-                  </div>
-                  <div>
-                    <div className="text-sm font-bold text-slate-800">{opt.label}</div>
-                    <div className="text-[10px] text-slate-400 font-medium">{opt.desc}</div>
-                  </div>
-                </div>
+                  <View style={[tw`w-10 h-10 rounded-xl items-center justify-center mr-4`, formData.activityLevel === opt.id ? tw`bg-[#52B788]` : tw`bg-slate-50`]}>
+                    <FontAwesome6 name="person-walking" size={14} color={formData.activityLevel === opt.id ? 'white' : '#CBD5E1'} />
+                  </View>
+                  <View>
+                    <Text style={tw`text-sm font-bold text-slate-800`}>{opt.label}</Text>
+                    <Text style={tw`text-[10px] text-slate-400 font-medium`}>{opt.desc}</Text>
+                  </View>
+                </TouchableOpacity>
               ))}
-            </div>
+            </View>
             
-            <button onClick={prevStep} className={secondaryBtn}>Back</button>
-          </div>
+            <TouchableOpacity onPress={prevStep} style={secondaryBtn}>
+              <Text style={tw`text-slate-500 font-bold text-sm`}>Back</Text>
+            </TouchableOpacity>
+          </View>
         )}
 
         {step === 'workout' && (
-          <div className="space-y-8">
-            <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-slate-800">Training</h2>
-              <p className="text-slate-500 text-sm font-medium">Where and how do you want to train?</p>
-            </div>
+          <View style={tw`space-y-8`}>
+            <View style={tw`mb-6`}>
+              <Text style={tw`text-2xl font-bold text-slate-800`}>Training</Text>
+              <Text style={tw`text-slate-500 text-sm font-medium mt-1`}>Where and how do you want to train?</Text>
+            </View>
 
-            <div className="space-y-6">
-              <div>
-                <label className={sliderLabelClass}>Preferred Setting</label>
-                <div className="grid grid-cols-3 gap-3">
+            <View style={tw`space-y-6 mb-8`}>
+              <View>
+                <Text style={sliderLabelClass}>Preferred Setting</Text>
+                <View style={tw`flex-row justify-between`}>
                   {(['gym', 'home', 'both'] as const).map(p => (
-                    <button 
+                    <TouchableOpacity
                       key={p}
-                      onClick={() => updateData({ workoutPreference: p, gymAccess: p !== 'home' })}
-                      className={`py-3 rounded-xl text-[10px] font-bold uppercase tracking-wider border-2 transition-all ${formData.workoutPreference === p ? 'border-[#52B788] bg-[#F8FAF9] text-[#2D6A4F]' : 'border-slate-50 bg-white text-slate-400'}`}
+                      onPress={() => updateData({ workoutPreference: p, gymAccess: p !== 'home' })}
+                      style={[tw`flex-1 py-3 rounded-xl items-center border-2 mx-1`, formData.workoutPreference === p ? tw`border-[#52B788] bg-[#F8FAF9]` : tw`border-slate-50 bg-white`]}
                     >
-                      {p}
-                    </button>
+                      <Text style={[tw`text-[10px] font-bold uppercase tracking-wider`, formData.workoutPreference === p ? tw`text-[#2D6A4F]` : tw`text-slate-400`]}>{p}</Text>
+                    </TouchableOpacity>
                   ))}
-                </div>
-              </div>
+                </View>
+              </View>
 
-              <div>
-                <label className={sliderLabelClass}>Experience Level</label>
-                <div className="grid grid-cols-3 gap-3">
+              <View>
+                <Text style={sliderLabelClass}>Experience Level</Text>
+                <View style={tw`flex-row justify-between`}>
                   {(['beginner', 'intermediate', 'advanced'] as ExperienceLevel[]).map(e => (
-                    <button 
+                    <TouchableOpacity
                       key={e}
-                      onClick={() => updateData({ experienceLevel: e })}
-                      className={`py-3 rounded-xl text-[10px] font-bold uppercase tracking-wider border-2 transition-all ${formData.experienceLevel === e ? 'border-[#52B788] bg-[#F8FAF9] text-[#2D6A4F]' : 'border-slate-50 bg-white text-slate-400'}`}
+                      onPress={() => updateData({ experienceLevel: e })}
+                      style={[tw`flex-1 py-3 rounded-xl items-center border-2 mx-1`, formData.experienceLevel === e ? tw`border-[#52B788] bg-[#F8FAF9]` : tw`border-slate-50 bg-white`]}
                     >
-                      {e}
-                    </button>
+                      <Text style={[tw`text-[10px] font-bold uppercase tracking-wider`, formData.experienceLevel === e ? tw`text-[#2D6A4F]` : tw`text-slate-400`]}>{e}</Text>
+                    </TouchableOpacity>
                   ))}
-                </div>
-              </div>
-            </div>
+                </View>
+              </View>
+            </View>
 
-            <div className="flex space-x-3 pt-4">
-              <button onClick={prevStep} className={secondaryBtn}>Back</button>
-              <button onClick={nextStep} className={primaryBtn}>Continue</button>
-            </div>
-          </div>
+            <View style={tw`flex-row pt-4`}>
+              <TouchableOpacity onPress={prevStep} style={[secondaryBtn, tw`flex-1 mr-2`]}>
+                <Text style={tw`text-slate-500 font-bold text-sm`}>Back</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={nextStep} style={[primaryBtn, tw`flex-1 ml-2`]}>
+                <Text style={tw`text-white font-bold text-sm`}>Continue</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         )}
 
         {step === 'nutrition' && (
-          <div className="space-y-8">
-            <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-slate-800">Eating Style</h2>
-              <p className="text-slate-500 text-sm font-medium">What's on your plate usually?</p>
-            </div>
+          <View style={tw`space-y-8`}>
+            <View style={tw`mb-6`}>
+              <Text style={tw`text-2xl font-bold text-slate-800`}>Eating Style</Text>
+              <Text style={tw`text-slate-500 text-sm font-medium mt-1`}>What's on your plate usually?</Text>
+            </View>
 
-            <div className="space-y-6">
-              <div>
-                <label className={sliderLabelClass}>Cuisine Preference</label>
-                <div className="grid grid-cols-2 gap-3">
+            <View style={tw`space-y-6 mb-8`}>
+              <View>
+                <Text style={sliderLabelClass}>Cuisine Preference</Text>
+                <View style={tw`flex-row flex-wrap`}>
                   {(['Indian', 'Western', 'Middle Eastern', 'Asian', 'Mixed'] as CuisineStyle[]).map(c => (
-                    <button 
+                    <TouchableOpacity
                       key={c}
-                      onClick={() => updateData({ cuisineStyle: c })}
-                      className={`py-3 rounded-xl text-xs font-bold border-2 transition-all ${formData.cuisineStyle === c ? 'border-[#52B788] bg-[#F8FAF9] text-[#2D6A4F]' : 'border-slate-50 bg-white text-slate-400'}`}
+                      onPress={() => updateData({ cuisineStyle: c })}
+                      style={[tw`w-[48%] py-3 rounded-xl items-center border-2 m-1`, formData.cuisineStyle === c ? tw`border-[#52B788] bg-[#F8FAF9]` : tw`border-slate-50 bg-white`]}
                     >
-                      {c}
-                    </button>
+                      <Text style={[tw`text-xs font-bold`, formData.cuisineStyle === c ? tw`text-[#2D6A4F]` : tw`text-slate-400`]}>{c}</Text>
+                    </TouchableOpacity>
                   ))}
-                </div>
-              </div>
+                </View>
+              </View>
 
-              <div>
-                <label className={sliderLabelClass}>Diet Type</label>
-                <div className="grid grid-cols-2 gap-3">
+              <View>
+                <Text style={sliderLabelClass}>Diet Type</Text>
+                <View style={tw`flex-row flex-wrap`}>
                   {(['veg', 'non-veg', 'eggetarian', 'vegan', 'mixed'] as DietType[]).map(d => (
-                    <button 
+                    <TouchableOpacity
                       key={d}
-                      onClick={() => updateData({ dietType: d })}
-                      className={`py-3 rounded-xl text-[10px] font-bold uppercase border-2 transition-all ${formData.dietType === d ? 'border-[#52B788] bg-[#F8FAF9] text-[#2D6A4F]' : 'border-slate-50 bg-white text-slate-400'}`}
+                      onPress={() => updateData({ dietType: d })}
+                      style={[tw`w-[31%] py-3 rounded-xl items-center border-2 m-1`, formData.dietType === d ? tw`border-[#52B788] bg-[#F8FAF9]` : tw`border-slate-50 bg-white`]}
                     >
-                      {d}
-                    </button>
+                      <Text style={[tw`text-[10px] font-bold uppercase`, formData.dietType === d ? tw`text-[#2D6A4F]` : tw`text-slate-400`]}>{d}</Text>
+                    </TouchableOpacity>
                   ))}
-                </div>
-              </div>
-            </div>
+                </View>
+              </View>
+            </View>
 
-            <div className="flex space-x-3 pt-4">
-              <button onClick={prevStep} className={secondaryBtn}>Back</button>
-              <button onClick={nextStep} className={primaryBtn}>Continue</button>
-            </div>
-          </div>
+            <View style={tw`flex-row pt-4`}>
+              <TouchableOpacity onPress={prevStep} style={[secondaryBtn, tw`flex-1 mr-2`]}>
+                <Text style={tw`text-slate-500 font-bold text-sm`}>Back</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={nextStep} style={[primaryBtn, tw`flex-1 ml-2`]}>
+                <Text style={tw`text-white font-bold text-sm`}>Continue</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         )}
 
         {step === 'pattern' && (
-          <div className="space-y-8">
-            <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-slate-800">Meal Habits</h2>
-              <p className="text-slate-500 text-sm font-medium">How often do you eat?</p>
-            </div>
+          <View style={tw`space-y-8`}>
+            <View style={tw`mb-6`}>
+              <Text style={tw`text-2xl font-bold text-slate-800`}>Meal Habits</Text>
+              <Text style={tw`text-slate-500 text-sm font-medium mt-1`}>How often do you eat?</Text>
+            </View>
 
-            <div className="space-y-3">
+            <View style={tw`space-y-3 mb-8`}>
               {[
-                { id: '2 meals', label: '2 Meals/Day', icon: 'fa-clock' },
-                { id: '3 meals', label: '3 Standard Meals', icon: 'fa-utensils' },
-                { id: 'snacker', label: 'Frequent Snacker', icon: 'fa-cookie-bite' },
-                { id: 'skip breakfast', label: 'Skip Breakfast', icon: 'fa-sun' }
+                { id: '2 meals', label: '2 Meals/Day', icon: 'clock' },
+                { id: '3 meals', label: '3 Standard Meals', icon: 'utensils' },
+                { id: 'snacker', label: 'Frequent Snacker', icon: 'cookie-bite' },
+                { id: 'skip breakfast', label: 'Skip Breakfast', icon: 'sun' }
               ].map((opt) => (
-                <div 
+                <TouchableOpacity
                   key={opt.id} 
-                  onClick={() => { updateData({ mealPattern: opt.id as MealPattern }); setTimeout(nextStep, 200); }}
-                  className={optionCardClass(formData.mealPattern === opt.id)}
+                  onPress={() => { updateData({ mealPattern: opt.id as MealPattern }); setTimeout(nextStep, 200); }}
+                  style={optionCardClass(formData.mealPattern === opt.id)}
                 >
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center mr-4 ${formData.mealPattern === opt.id ? 'bg-[#52B788] text-white' : 'bg-slate-50 text-slate-300'}`}>
-                    <i className={`fa-solid ${opt.icon} text-sm`}></i>
-                  </div>
-                  <span className="text-sm font-bold text-slate-800">{opt.label}</span>
-                </div>
+                  <View style={[tw`w-10 h-10 rounded-xl items-center justify-center mr-4`, formData.mealPattern === opt.id ? tw`bg-[#52B788]` : tw`bg-slate-50`]}>
+                    <FontAwesome6 name={opt.icon} size={14} color={formData.mealPattern === opt.id ? 'white' : '#CBD5E1'} />
+                  </View>
+                  <Text style={tw`text-sm font-bold text-slate-800`}>{opt.label}</Text>
+                </TouchableOpacity>
               ))}
-            </div>
+            </View>
             
-            <button onClick={prevStep} className={secondaryBtn}>Back</button>
-          </div>
+            <TouchableOpacity onPress={prevStep} style={secondaryBtn}>
+              <Text style={tw`text-slate-500 font-bold text-sm`}>Back</Text>
+            </TouchableOpacity>
+          </View>
         )}
 
         {step === 'habits' && (
-          <div className="space-y-8">
-            <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-slate-800">Lifestyle</h2>
-              <p className="text-slate-500 text-sm font-medium">The small things matter most.</p>
-            </div>
+          <View style={tw`space-y-8`}>
+            <View style={tw`mb-6`}>
+              <Text style={tw`text-2xl font-bold text-slate-800`}>Lifestyle</Text>
+              <Text style={tw`text-slate-500 text-sm font-medium mt-1`}>The small things matter most.</Text>
+            </View>
 
-            <div className="space-y-8">
-              <div className="space-y-4">
-                <div className="flex justify-between items-end">
-                  <label className={sliderLabelClass}>Avg Sleep</label>
-                  <span className="text-lg font-bold text-slate-800">{formData.sleepHours} <span className="text-xs text-slate-300">hrs</span></span>
-                </div>
-                <input 
-                  type="range" min="4" max="12" 
+            <View style={tw`space-y-8 mb-8`}>
+              <View>
+                <View style={tw`flex-row justify-between items-end mb-2`}>
+                  <Text style={sliderLabelClass}>Avg Sleep</Text>
+                  <Text style={tw`text-lg font-bold text-slate-800`}>{formData.sleepHours} <Text style={tw`text-xs text-slate-300`}>hrs</Text></Text>
+                </View>
+                <Slider
+                  minimumValue={4} maximumValue={12} step={1}
                   value={formData.sleepHours} 
-                  onChange={(e) => updateData({ sleepHours: parseInt(e.target.value) })}
-                  className="w-full accent-[#52B788]"
+                  onValueChange={(val) => updateData({ sleepHours: val })}
+                  minimumTrackTintColor="#52B788"
+                  thumbTintColor="#52B788"
                 />
-              </div>
+              </View>
 
-              <div className="space-y-4">
-                <div className="flex justify-between items-end">
-                  <label className={sliderLabelClass}>Water Intake</label>
-                  <span className="text-lg font-bold text-slate-800">{formData.waterIntake} <span className="text-xs text-slate-300">glasses</span></span>
-                </div>
-                <input 
-                  type="range" min="2" max="20" 
+              <View>
+                <View style={tw`flex-row justify-between items-end mb-2`}>
+                  <Text style={sliderLabelClass}>Water Intake</Text>
+                  <Text style={tw`text-lg font-bold text-slate-800`}>{formData.waterIntake} <Text style={tw`text-xs text-slate-300`}>glasses</Text></Text>
+                </View>
+                <Slider
+                  minimumValue={2} maximumValue={20} step={1}
                   value={formData.waterIntake} 
-                  onChange={(e) => updateData({ waterIntake: parseInt(e.target.value) })}
-                  className="w-full accent-[#52B788]"
+                  onValueChange={(val) => updateData({ waterIntake: val })}
+                  minimumTrackTintColor="#52B788"
+                  thumbTintColor="#52B788"
                 />
-              </div>
+              </View>
 
-              <div className="space-y-4">
-                <div className="flex justify-between items-end">
-                  <label className={sliderLabelClass}>Stress Level</label>
-                  <span className="text-lg font-bold text-slate-800">{formData.stressLevel}/10</span>
-                </div>
-                <input 
-                  type="range" min="1" max="10" 
+              <View>
+                <View style={tw`flex-row justify-between items-end mb-2`}>
+                  <Text style={sliderLabelClass}>Stress Level</Text>
+                  <Text style={tw`text-lg font-bold text-slate-800`}>{formData.stressLevel}/10</Text>
+                </View>
+                <Slider
+                  minimumValue={1} maximumValue={10} step={1}
                   value={formData.stressLevel} 
-                  onChange={(e) => updateData({ stressLevel: parseInt(e.target.value) })}
-                  className="w-full accent-[#52B788]"
+                  onValueChange={(val) => updateData({ stressLevel: val })}
+                  minimumTrackTintColor="#52B788"
+                  thumbTintColor="#52B788"
                 />
-              </div>
-            </div>
+              </View>
+            </View>
 
-            <div className="flex space-x-3 pt-4">
-              <button onClick={prevStep} className={secondaryBtn}>Back</button>
-              <button onClick={nextStep} className={primaryBtn}>Continue</button>
-            </div>
-          </div>
+            <View style={tw`flex-row pt-4`}>
+              <TouchableOpacity onPress={prevStep} style={[secondaryBtn, tw`flex-1 mr-2`]}>
+                <Text style={tw`text-slate-500 font-bold text-sm`}>Back</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={nextStep} style={[primaryBtn, tw`flex-1 ml-2`]}>
+                <Text style={tw`text-white font-bold text-sm`}>Continue</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         )}
 
         {step === 'final' && (
-          <div className="space-y-8">
-            <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-slate-800">Health Check</h2>
-              <p className="text-slate-500 text-sm font-medium">Last step to safety.</p>
-            </div>
+          <View style={tw`space-y-8`}>
+            <View style={tw`mb-6`}>
+              <Text style={tw`text-2xl font-bold text-slate-800`}>Health Check</Text>
+              <Text style={tw`text-slate-500 text-sm font-medium mt-1`}>Last step to safety.</Text>
+            </View>
 
-            <div className="space-y-6">
-              <div className="space-y-3">
-                <label className={sliderLabelClass}>Injuries or Conditions</label>
-                <textarea 
-                  rows={4}
+            <View style={tw`space-y-6 mb-8`}>
+              <View>
+                <Text style={sliderLabelClass}>Injuries or Conditions</Text>
+                <TextInput
+                  multiline
+                  numberOfLines={4}
                   value={formData.injuries}
-                  onChange={(e) => updateData({ injuries: e.target.value })}
+                  onChangeText={(text) => updateData({ injuries: text })}
                   placeholder="e.g. Lower back pain, knee issues, or 'None'..."
-                  className="w-full bg-white border border-slate-100 p-4 rounded-xl outline-none focus:border-[#52B788] text-sm font-medium resize-none shadow-sm"
+                  style={tw`w-full bg-white border border-slate-100 p-4 rounded-xl text-sm font-medium text-slate-700 min-h-[100px] shadow-sm`}
+                  textAlignVertical="top"
                 />
-              </div>
+              </View>
 
-              <div className="p-4 bg-amber-50 rounded-2xl flex items-start space-x-3 border border-amber-100">
-                <i className="fa-solid fa-shield-halved text-amber-500 text-sm mt-1"></i>
-                <p className="text-[10px] text-amber-700 leading-relaxed font-bold uppercase tracking-wider">
+              <View style={tw`p-4 bg-amber-50 rounded-2xl flex-row items-start border border-amber-100`}>
+                <FontAwesome6 name="shield-halved" size={14} color="#F59E0B" style={tw`mt-1 mr-3`} />
+                <Text style={tw`text-[10px] text-amber-700 leading-relaxed font-bold uppercase tracking-wider flex-1`}>
                   Always consult a doctor before starting a new fitness routine. Safety first.
-                </p>
-              </div>
-            </div>
+                </Text>
+              </View>
+            </View>
 
-            <div className="flex space-x-3 pt-4">
-              <button onClick={prevStep} className={secondaryBtn}>Back</button>
-              <button 
-                onClick={() => onSubmit(formData)} 
+            <View style={tw`flex-row pt-4`}>
+              <TouchableOpacity onPress={prevStep} style={[secondaryBtn, tw`flex-1 mr-2`]}>
+                <Text style={tw`text-slate-500 font-bold text-sm`}>Back</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => onSubmit(formData)}
                 disabled={isLoading}
-                className={primaryBtn}
+                style={[primaryBtn, tw`flex-1 ml-2`]}
               >
-                {isLoading ? <i className="fa-solid fa-circle-notch fa-spin"></i> : 'Create My Vision Plan'}
-              </button>
-            </div>
-          </div>
+                {isLoading ? (
+                  <FontAwesome6 name="circle-notch" size={14} color="white" />
+                ) : (
+                  <Text style={tw`text-white font-bold text-sm`}>Create My Vision Plan</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
         )}
-      </div>
-    </div>
+      </View>
+    </View>
   );
 };
 
