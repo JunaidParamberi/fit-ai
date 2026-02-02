@@ -1,6 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { WeeklyProgress, UserProfile, AssessmentResult, StrengthMetric } from '../types';
+import tw from 'twrnc';
+import { FontAwesome6 } from '@expo/vector-icons';
+import { Svg, Circle, Line, Path } from 'react-native-svg';
 
 interface Props { profile: UserProfile; assessment: AssessmentResult; }
 
@@ -31,89 +35,103 @@ const ProgressTracker: React.FC<Props> = ({ profile, assessment }) => {
   };
 
   return (
-    <div className="space-y-6 animate-soft-fade-in">
-      <div className="px-1">
-        <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Progress</h2>
-        <p className="text-slate-500 font-medium text-sm mt-1">Consistency creates results.</p>
-      </div>
+    <View style={tw`space-y-6`}>
+      <View style={tw`px-1 mb-6`}>
+        <Text style={tw`text-3xl font-bold text-slate-900 tracking-tight`}>Progress</Text>
+        <Text style={tw`text-slate-500 font-medium text-sm mt-1`}>Consistency creates results.</Text>
+      </View>
 
-      <div className="soft-card p-6 flex items-center justify-between">
-        <div className="space-y-1">
-          <h3 className="font-bold text-slate-800 text-sm">Consistency</h3>
-          <p className="text-xs text-slate-500 font-medium">92% attendance this month</p>
-        </div>
-        <div className="relative w-12 h-12 flex items-center justify-center">
-          <svg className="absolute inset-0 w-full h-full transform -rotate-90">
-            <circle cx="24" cy="24" r="20" stroke="#F1F5F9" strokeWidth="3" fill="transparent" />
-            <circle cx="24" cy="24" r="20" stroke="#52B788" strokeWidth="4" fill="transparent" strokeDasharray="125.6" strokeDashoffset={125.6 - (125.6 * consistencyScore) / 100} strokeLinecap="round" />
-          </svg>
-          <span className="text-[10px] font-bold text-slate-800">{consistencyScore}%</span>
-        </div>
-      </div>
+      <View style={tw`bg-white p-6 rounded-3xl shadow-sm border border-slate-50 flex-row items-center justify-between mb-6`}>
+        <View style={tw`space-y-1`}>
+          <Text style={tw`font-bold text-slate-800 text-sm`}>Consistency</Text>
+          <Text style={tw`text-xs text-slate-500 font-medium`}>92% attendance this month</Text>
+        </View>
+        <View style={tw`relative w-12 h-12 items-center justify-center`}>
+          <Svg height="48" width="48" viewBox="0 0 48 48" style={tw`absolute`}>
+            <Circle cx="24" cy="24" r="20" stroke="#F1F5F9" strokeWidth="3" fill="transparent" />
+            <Circle
+              cx="24" cy="24" r="20"
+              stroke="#52B788" strokeWidth="4" fill="transparent"
+              strokeDasharray="125.6"
+              strokeDashoffset={125.6 - (125.6 * consistencyScore) / 100}
+              strokeLinecap="round"
+              transform="rotate(-90 24 24)"
+            />
+          </Svg>
+          <Text style={tw`text-[10px] font-bold text-slate-800`}>{consistencyScore}%</Text>
+        </View>
+      </View>
 
-      <div className="soft-card p-6">
-        <div className="flex justify-between items-start mb-8">
-          <div>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Body Weight</span>
-            <div className="flex items-baseline space-x-1">
-              <span className="text-3xl font-bold text-slate-900">74.2</span>
-              <span className="text-sm font-bold text-slate-400">kg</span>
-            </div>
-          </div>
-          <div className="flex bg-slate-50 p-1 rounded-xl border border-slate-100">
+      <View style={tw`bg-white p-6 rounded-3xl shadow-sm border border-slate-50 mb-6`}>
+        <View style={tw`flex-row justify-between items-start mb-8`}>
+          <View>
+            <Text style={tw`text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1`}>Body Weight</Text>
+            <View style={tw`flex-row items-baseline space-x-1`}>
+              <Text style={tw`text-3xl font-bold text-slate-900`}>74.2</Text>
+              <Text style={tw`text-sm font-bold text-slate-400 ml-1`}>kg</Text>
+            </View>
+          </View>
+          <View style={tw`flex-row bg-slate-50 p-1 rounded-xl border border-slate-100`}>
             {(['7 Days', '14 Days', '30 Days'] as Period[]).map((p) => (
-              <button
+              <TouchableOpacity
                 key={p}
-                onClick={() => setPeriod(p)}
-                className={`px-3 py-1 rounded-lg text-[9px] font-bold uppercase transition-all ${
-                  period === p ? 'bg-white text-[#52B788] shadow-sm' : 'text-slate-400'
-                }`}
+                onPress={() => setPeriod(p)}
+                style={[tw`px-3 py-1 rounded-lg`, period === p ? tw`bg-white shadow-sm` : null]}
               >
-                {p}
-              </button>
+                <Text style={[tw`text-[9px] font-bold uppercase transition-all`, period === p ? tw`text-[#52B788]` : tw`text-slate-400`]}>
+                  {p}
+                </Text>
+              </TouchableOpacity>
             ))}
-          </div>
-        </div>
+          </View>
+        </View>
 
-        <div className="h-40 w-full relative">
-          <svg className="w-full h-full" viewBox="0 0 200 100" preserveAspectRatio="none">
-            <line x1="0" y1="25" x2="200" y2="25" stroke="#F1F5F9" strokeWidth="1" />
-            <line x1="0" y1="50" x2="200" y2="50" stroke="#F1F5F9" strokeWidth="1" />
-            <line x1="0" y1="75" x2="200" y2="75" stroke="#F1F5F9" strokeWidth="1" />
-            <path d={getGraphPath()} fill="none" stroke="#52B788" strokeWidth="2.5" strokeLinecap="round" className={`transition-all duration-500 ease-in-out ${isGraphLoading ? 'opacity-0' : 'opacity-100'}`} />
-          </svg>
-        </div>
-      </div>
+        <View style={tw`h-40 w-full relative`}>
+          <Svg height="160" width="100%" viewBox="0 0 200 100">
+            <Line x1="0" y1="25" x2="200" y2="25" stroke="#F1F5F9" strokeWidth="1" />
+            <Line x1="0" y1="50" x2="200" y2="50" stroke="#F1F5F9" strokeWidth="1" />
+            <Line x1="0" y1="75" x2="200" y2="75" stroke="#F1F5F9" strokeWidth="1" />
+            <Path
+              d={getGraphPath()}
+              fill="none"
+              stroke="#52B788"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              opacity={isGraphLoading ? 0 : 1}
+            />
+          </Svg>
+        </View>
+      </View>
 
-      <div className="soft-card p-6 space-y-6">
-        <h3 className="text-sm font-bold text-slate-800 mb-2">Strength Stats</h3>
+      <View style={tw`bg-white p-6 rounded-3xl shadow-sm border border-slate-50 mb-6`}>
+        <Text style={tw`text-sm font-bold text-slate-800 mb-4`}>Strength Stats</Text>
         {strengthMetrics.map((m, i) => (
-          <div key={i} className="space-y-2">
-            <div className="flex justify-between items-end">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{m.name}</span>
-              <span className="text-sm font-bold text-slate-800">{m.currentWeight}{m.unit}</span>
-            </div>
-            <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden">
-              <div className="h-full bg-[#52B788] rounded-full transition-all duration-1000" style={{ width: `${60 + (i * 10)}%` }}></div>
-            </div>
-          </div>
+          <View key={i} style={tw`mb-6`}>
+            <View style={tw`flex-row justify-between items-end mb-2`}>
+              <Text style={tw`text-xs font-bold text-slate-500 uppercase tracking-wider`}>{m.name}</Text>
+              <Text style={tw`text-sm font-bold text-slate-800`}>{m.currentWeight}{m.unit}</Text>
+            </View>
+            <View style={tw`h-1.5 w-full bg-slate-50 rounded-full overflow-hidden`}>
+              <View style={[tw`h-full bg-[#52B788] rounded-full`, { width: `${60 + (i * 10)}%` }]} />
+            </View>
+          </View>
         ))}
-      </div>
+      </View>
 
-      <div className="soft-card p-6 bg-[#EDF2F0] border-none">
-        <div className="flex items-start space-x-4">
-          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#52B788] shadow-sm flex-shrink-0">
-            <i className="fa-solid fa-sparkles text-sm"></i>
-          </div>
-          <div className="space-y-1">
-            <h4 className="text-sm font-bold text-[#2D6A4F]">Smart Tip</h4>
-            <p className="text-xs text-[#2D6A4F] font-medium leading-relaxed">
+      <View style={tw`bg-[#EDF2F0] p-6 rounded-3xl mb-12`}>
+        <View style={tw`flex-row items-start`}>
+          <View style={tw`w-10 h-10 rounded-xl bg-white items-center justify-center shadow-sm mr-4`}>
+            <FontAwesome6 name="sparkles" size={14} color="#52B788" />
+          </View>
+          <View style={tw`flex-1`}>
+            <Text style={tw`text-sm font-bold text-[#2D6A4F]`}>Smart Tip</Text>
+            <Text style={tw`text-xs text-[#2D6A4F] font-medium leading-relaxed mt-1`}>
               Your recovery is improving. Add small weight increases to your next session!
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+            </Text>
+          </View>
+        </View>
+      </View>
+    </View>
   );
 };
 

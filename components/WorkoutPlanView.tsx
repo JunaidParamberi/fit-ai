@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { WorkoutPlan } from '../types';
+import tw from 'twrnc';
+import { FontAwesome6 } from '@expo/vector-icons';
 
 interface Props {
   plan: WorkoutPlan;
@@ -10,105 +13,107 @@ const WorkoutPlanView: React.FC<Props> = ({ plan }) => {
   const currentWorkout = plan.weeklySplit[selectedDayIdx] || plan.weeklySplit[0];
 
   return (
-    <div className="space-y-6 pb-24 animate-soft-fade-in">
+    <View style={tw`space-y-6 pb-24`}>
       {/* Header */}
-      <div className="flex items-end justify-between px-1">
-        <div>
-          <span className="text-xs font-bold text-[#52B788] uppercase tracking-wider">Your Routine</span>
-          <h2 className="text-3xl font-bold text-slate-900 tracking-tight mt-1">Today's Session</h2>
-        </div>
-        <div className="w-12 h-12 bg-white rounded-2xl soft-shadow flex items-center justify-center text-[#52B788] border border-slate-50">
-          <i className="fa-solid fa-dumbbell text-lg"></i>
-        </div>
-      </div>
+      <View style={tw`flex-row items-end justify-between px-1 mb-6`}>
+        <View>
+          <Text style={tw`text-xs font-bold text-[#52B788] uppercase tracking-wider`}>Your Routine</Text>
+          <Text style={tw`text-3xl font-bold text-slate-900 tracking-tight mt-1`}>Today's Session</Text>
+        </View>
+        <View style={tw`w-12 h-12 bg-white rounded-2xl items-center justify-center border border-slate-50 shadow-sm`}>
+          <FontAwesome6 name="dumbbell" size={20} color="#52B788" />
+        </View>
+      </View>
 
       {/* Day Selector */}
-      <div className="flex space-x-2 overflow-x-auto no-scrollbar py-2 -mx-1 px-1">
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={tw`flex-row py-2 -mx-1 px-1 mb-6`}>
         {plan.weeklySplit.map((day, idx) => (
-          <button
+          <TouchableOpacity
             key={idx}
-            onClick={() => setSelectedDayIdx(idx)}
-            className={`flex-shrink-0 px-5 py-3 rounded-2xl font-bold transition-all text-sm ${
+            onPress={() => setSelectedDayIdx(idx)}
+            style={[tw`px-5 py-3 rounded-2xl font-bold mx-1 border`,
               selectedDayIdx === idx 
-              ? 'bg-[#52B788] text-white shadow-md' 
-              : 'bg-white text-slate-400 border border-slate-100 hover:border-[#52B788]/30'
-            }`}
+              ? tw`bg-[#52B788] border-[#52B788] shadow-md`
+              : tw`bg-white border-slate-100`
+            ]}
           >
-            {day.day}
-          </button>
+            <Text style={[tw`font-bold text-sm`, selectedDayIdx === idx ? tw`text-white` : tw`text-slate-400`]}>
+              {day.day}
+            </Text>
+          </TouchableOpacity>
         ))}
-      </div>
+      </ScrollView>
 
       {/* Routine Focus Card */}
-      <div className="soft-card p-6 border-l-4 border-l-[#52B788]">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-xl font-bold text-slate-800 tracking-tight">{currentWorkout.focus}</h3>
-            <p className="text-sm text-slate-500 font-medium mt-1">
-              Estimated duration: <span className="text-[#2D6A4F] font-bold">45 mins</span>
-            </p>
-          </div>
-          <div className="text-right">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Intensity</span>
-            <div className="flex space-x-0.5 mt-1 justify-end">
+      <View style={tw`bg-white p-6 rounded-3xl shadow-sm border-l-4 border-l-[#52B788] mb-6`}>
+        <View style={tw`flex-row items-center justify-between`}>
+          <View>
+            <Text style={tw`text-xl font-bold text-slate-800 tracking-tight`}>{currentWorkout.focus}</Text>
+            <Text style={tw`text-sm text-slate-500 font-medium mt-1`}>
+              Estimated duration: <Text style={tw`text-[#2D6A4F] font-bold`}>45 mins</Text>
+            </Text>
+          </View>
+          <View style={tw`items-end`}>
+            <Text style={tw`text-[10px] font-bold text-slate-400 uppercase tracking-widest`}>Intensity</Text>
+            <View style={tw`flex-row space-x-0.5 mt-1`}>
               {[1, 2, 3, 4].map(i => (
-                <div key={i} className={`w-3 h-1 rounded-full ${i <= 3 ? 'bg-[#52B788]' : 'bg-slate-100'}`}></div>
+                <View key={i} style={[tw`w-3 h-1 rounded-full mx-0.5`, i <= 3 ? tw`bg-[#52B788]` : tw`bg-slate-100`]} />
               ))}
-            </div>
-          </div>
-        </div>
-      </div>
+            </View>
+          </View>
+        </View>
+      </View>
 
       {/* Exercise List */}
-      <div className="space-y-4">
-        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">Exercises</h4>
+      <View style={tw`space-y-4 mb-6`}>
+        <Text style={tw`text-xs font-bold text-slate-400 uppercase tracking-widest px-1 mb-4`}>Exercises</Text>
         {currentWorkout.exercises.map((ex, idx) => (
-          <div key={idx} className="soft-card p-5 group hover:bg-[#F8FAF9] cursor-pointer">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="w-10 h-10 bg-[#F8FAF9] rounded-xl flex items-center justify-center text-slate-400 font-bold text-sm border border-slate-50 group-hover:bg-white group-hover:text-[#52B788] transition-colors">
-                  {idx + 1}
-                </div>
-                <div>
-                  <h5 className="font-bold text-slate-800 text-base">{ex.name}</h5>
-                  <div className="flex items-center space-x-3 mt-1 text-xs font-semibold text-slate-500">
-                    <span className="bg-[#EDF2F0] px-2 py-0.5 rounded text-[#2D6A4F]">{ex.sets} Sets</span>
-                    <span>{ex.reps} Reps</span>
-                  </div>
-                </div>
-              </div>
-              <div className="text-right">
-                <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest block">Rest</span>
-                <span className="text-sm font-bold text-slate-600">{ex.rest}s</span>
-              </div>
-            </div>
-          </div>
+          <View key={idx} style={tw`bg-white p-5 rounded-3xl shadow-sm border border-slate-50 mb-4`}>
+            <View style={tw`flex-row items-center justify-between`}>
+              <View style={tw`flex-row items-center space-x-4`}>
+                <View style={tw`w-10 h-10 bg-[#F8FAF9] rounded-xl items-center justify-center border border-slate-50 mr-4`}>
+                  <Text style={tw`text-slate-400 font-bold text-sm`}>{idx + 1}</Text>
+                </View>
+                <View>
+                  <Text style={tw`font-bold text-slate-800 text-base`}>{ex.name}</Text>
+                  <View style={tw`flex-row items-center mt-1`}>
+                    <View style={tw`bg-[#EDF2F0] px-2 py-0.5 rounded mr-3`}>
+                      <Text style={tw`text-[#2D6A4F] text-xs font-semibold`}>{ex.sets} Sets</Text>
+                    </View>
+                    <Text style={tw`text-xs font-semibold text-slate-500`}>{ex.reps} Reps</Text>
+                  </View>
+                </View>
+              </View>
+              <View style={tw`items-end`}>
+                <Text style={tw`text-[10px] font-bold text-slate-300 uppercase tracking-widest`}>Rest</Text>
+                <Text style={tw`text-sm font-bold text-slate-600`}>{ex.rest}s</Text>
+              </View>
+            </View>
+          </View>
         ))}
-      </div>
+      </View>
 
       {/* Tip Card */}
-      <div className="soft-card p-6 bg-[#EDF2F0]/50 border-dashed">
-        <div className="flex items-start space-x-4">
-          <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#52B788] flex-shrink-0 shadow-sm">
-            <i className="fa-solid fa-lightbulb text-sm"></i>
-          </div>
-          <div>
-            <h5 className="text-sm font-bold text-slate-800 mb-1">Trainer Tip</h5>
-            <p className="text-xs text-slate-600 leading-relaxed font-medium">
+      <View style={tw`bg-[#EDF2F0] p-6 rounded-3xl border border-dashed border-[#52B78833] mb-6`}>
+        <View style={tw`flex-row items-start space-x-4`}>
+          <View style={tw`w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm mr-4`}>
+            <FontAwesome6 name="lightbulb" size={14} color="#52B788" />
+          </View>
+          <View style={tw`flex-1`}>
+            <Text style={tw`text-sm font-bold text-slate-800 mb-1`}>Trainer Tip</Text>
+            <Text style={tw`text-xs text-slate-600 leading-relaxed font-medium`}>
               {plan.progressiveOverloadGuidance || "Focus on your breathing and maintain a steady tempo throughout each movement."}
-            </p>
-          </div>
-        </div>
-      </div>
+            </Text>
+          </View>
+        </View>
+      </View>
 
       {/* Start Button */}
-      <div className="pt-4">
-        <button className="w-full bg-[#52B788] hover:bg-[#40916C] text-white font-bold py-5 rounded-2xl shadow-lg transition-all transform active:scale-[0.98] flex items-center justify-center space-x-3">
-          <i className="fa-solid fa-play text-sm"></i>
-          <span>Start Workout</span>
-        </button>
-      </div>
-    </div>
+      <TouchableOpacity style={tw`w-full bg-[#52B788] py-5 rounded-2xl shadow-lg flex-row items-center justify-center`}>
+        <FontAwesome6 name="play" size={14} color="white" style={tw`mr-3`} />
+        <Text style={tw`text-white font-bold text-base`}>Start Workout</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 

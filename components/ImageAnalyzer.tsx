@@ -1,110 +1,116 @@
-
 import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { analyzeHealthImage } from '../services/geminiService';
+import tw from 'twrnc';
+import { FontAwesome6 } from '@expo/vector-icons';
 
 const ImageAnalyzer: React.FC = () => {
   const [analysis, setAnalysis] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
-  const [isPressed, setIsPressed] = useState(false);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handlePickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      alert('Sorry, we need camera roll permissions to make this work!');
+      return;
+    }
 
-    setAnalysis(null);
-    const reader = new FileReader();
-    reader.onloadend = () => setPreview(reader.result as string);
-    reader.readAsDataURL(file);
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 0.8,
+      base64: true,
+    });
 
-    setIsLoading(true);
-    try {
-      const base64 = await toBase64(file);
-      const data = base64.split(',')[1];
-      const result = await analyzeHealthImage(data, file.type);
-      setAnalysis(result);
-    } catch (err) {
-      setAnalysis("We couldn't process the image. Please try again.");
-    } finally {
-      setIsLoading(false);
+    if (!result.canceled) {
+      const asset = result.assets[0];
+      setPreview(asset.uri);
+      setAnalysis(null);
+      setIsLoading(true);
+
+      try {
+        if (asset.base64) {
+          // Determine mime type from extension or default to image/jpeg
+          const mimeType = asset.mimeType || 'image/jpeg';
+          const res = await analyzeHealthImage(asset.base64, mimeType);
+          setAnalysis(res);
+        } else {
+          setAnalysis("Could not get image data. Please try again.");
+        }
+      } catch (err) {
+        setAnalysis("We couldn't process the image. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
-  const toBase64 = (file: File): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-
   return (
-    <div className="soft-card p-6 overflow-hidden group/analyzer">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Photo Log</h3>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Analyze meals or form</p>
-        </div>
-        <div className={`px-3 py-1 rounded-full border text-[9px] font-bold uppercase tracking-widest transition-colors ${
-          isLoading ? 'bg-amber-50 border-amber-100 text-amber-600' : 'bg-slate-50 border-slate-100 text-slate-400'
-        }`}>
-          {isLoading ? 'Processing...' : 'Ready'}
-        </div>
-      </div>
+    <View style={tw`bg-white p-6 rounded-3xl shadow-sm border border-slate-50 mb-6`}>
+      <View style={tw`flex-row items-center justify-between mb-6`}>
+        <View>
+          <Text style={tw`text-sm font-bold text-slate-800 uppercase tracking-wider`}>Photo Log</Text>
+          <Text style={tw`text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1`}>Analyze meals or form</Text>
+        </View>
+        <View style={[tw`px-3 py-1 rounded-full border`, isLoading ? tw`bg-amber-50 border-amber-100` : tw`bg-slate-50 border-slate-100`]}>
+          <Text style={[tw`text-[9px] font-bold uppercase tracking-widest`, isLoading ? tw`text-amber-600` : tw`text-slate-400`]}>
+            {isLoading ? 'Processing...' : 'Ready'}
+          </Text>
+        </View>
+      </View>
 
-      <div className="space-y-6">
-        <label 
-          onMouseDown={() => setIsPressed(true)}
-          onMouseUp={() => setIsPressed(false)}
-          className={`relative flex flex-col items-center justify-center w-full h-64 bg-slate-50 border-2 border-dashed border-slate-100 rounded-2xl cursor-pointer transition-all overflow-hidden ${
-            isPressed ? 'scale-[0.98]' : 'hover:border-[#52B788]/30'
-          }`}
+      <View style={tw`space-y-6`}>
+        <TouchableOpacity
+          onPress={handlePickImage}
+          disabled={isLoading}
+          style={[tw`relative items-center justify-center w-full h-64 bg-slate-50 border-2 border-dashed border-slate-100 rounded-3xl overflow-hidden`, isLoading ? tw`opacity-70` : null]}
         >
           {preview ? (
             <>
-              <img src={preview} alt="Preview" className={`w-full h-full object-cover transition-all duration-700 ${isLoading ? 'opacity-40' : 'opacity-100'}`} />
+              <Image source={{ uri: preview }} style={tw`w-full h-full`} resizeMode="cover" />
               
               {isLoading && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/40 backdrop-blur-[2px]">
-                  <div className="w-12 h-12 border-4 border-[#52B788]/20 border-t-[#52B788] rounded-full animate-spin"></div>
-                  <span className="text-[10px] font-bold text-[#2D6A4F] uppercase tracking-widest mt-4">Analyzing Details</span>
-                </div>
+                <View style={[tw`absolute inset-0 items-center justify-center`, { backgroundColor: 'rgba(255, 255, 255, 0.4)' }]}>
+                  <ActivityIndicator size="large" color="#52B788" />
+                  <Text style={tw`text-[10px] font-bold text-[#2D6A4F] uppercase tracking-widest mt-4`}>Analyzing Details</Text>
+                </View>
               )}
             </>
           ) : (
-            <div className="text-center p-8 transition-transform group-hover:scale-105">
-              <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center border border-slate-50 mb-4 mx-auto group-hover:border-[#52B788]/30 soft-shadow transition-all">
-                <i className="fa-solid fa-camera text-xl text-slate-300 group-hover:text-[#52B788] transition-colors"></i>
-              </div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tap to upload photo</p>
-            </div>
+            <View style={tw`items-center p-8`}>
+              <View style={tw`w-14 h-14 rounded-2xl bg-white items-center justify-center border border-slate-50 mb-4 shadow-sm`}>
+                <FontAwesome6 name="camera" size={20} color="#CBD5E1" />
+              </View>
+              <Text style={tw`text-[10px] font-bold text-slate-400 uppercase tracking-widest`}>Tap to upload photo</Text>
+            </View>
           )}
-          <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} disabled={isLoading} />
-        </label>
+        </TouchableOpacity>
 
         {analysis && (
-          <div className="p-6 bg-[#F8FAF9] rounded-2xl border border-slate-100 space-y-4 animate-soft-fade-in">
-            <div className="flex items-center space-x-2">
-              <i className="fa-solid fa-sparkles text-[#52B788] text-xs"></i>
-              <span className="text-[10px] font-bold text-[#52B788] uppercase tracking-widest">Coach's Observation</span>
-            </div>
+          <View style={tw`p-6 bg-[#F8FAF9] rounded-2xl border border-slate-100 mt-6`}>
+            <View style={tw`flex-row items-center mb-4`}>
+              <FontAwesome6 name="sparkles" size={12} color="#52B788" style={tw`mr-2`} />
+              <Text style={tw`text-[10px] font-bold text-[#52B788] uppercase tracking-widest`}>Coach's Observation</Text>
+            </View>
             
-            <div className="space-y-3">
+            <View style={tw`space-y-3`}>
               {analysis.split('\n').map((line, i) => {
                 const cleanedLine = line.replace(/^[•\s*-]+/, '').trim();
                 if (!cleanedLine) return null;
                 return (
-                  <div key={i} className="flex items-start">
-                    <div className="w-1 h-1 rounded-full bg-[#52B788] mt-1.5 mr-3 flex-shrink-0"></div>
-                    <p className="text-xs text-slate-600 font-medium leading-relaxed">{cleanedLine}</p>
-                  </div>
+                  <View key={i} style={tw`flex-row items-start mb-2`}>
+                    <View style={tw`w-1 h-1 rounded-full bg-[#52B788] mt-2 mr-3`} />
+                    <Text style={tw`text-xs text-slate-600 font-medium leading-relaxed flex-1`}>{cleanedLine}</Text>
+                  </View>
                 );
               })}
-            </div>
-          </div>
+            </View>
+          </View>
         )}
-      </div>
-    </div>
+      </View>
+    </View>
   );
 };
 
